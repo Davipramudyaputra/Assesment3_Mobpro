@@ -10,5 +10,7 @@
     <string name="tutup">Tutup</string>
     <string name="logout">Logout</string>
     <string name="profil">Profil</string>
+    <string name="hapus">Hapus</string>
+    <string name="hapus_konfirmasi">Yakin ingin hapus?</string>
     <string name="nama_latin">Nama Latin</string>
 </resources>

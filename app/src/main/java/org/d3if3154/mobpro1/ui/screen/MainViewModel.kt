@@ -61,6 +61,24 @@ class MainViewModel : ViewModel() {
         }
     }
 
+    fun deleteData(userId: String, hewanId: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                Log.d("MainViewModel", "Attempting to delete hewan with ID: $hewanId using user ID: $userId")
+                val result = HewanApi.service.deleteHewan(userId, hewanId)
+                Log.d("MainViewModel", "API Response: status=${result.status}, message=${result.message}")
+                if (result.status == "success") {
+                    retrieveData(userId)
+                } else {
+                    throw Exception(result.message)
+                }
+            } catch (e: Exception) {
+                Log.d("MainViewModel", "Failure: ${e.message}")
+                errorMessage.value = "Error: ${e.message}"
+            }
+        }
+    }
+
     private fun Bitmap.toMultipartBody(): MultipartBody.Part {
         val stream = ByteArrayOutputStream()
         compress(Bitmap.CompressFormat.JPEG, 80, stream)

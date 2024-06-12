@@ -33,10 +33,6 @@ import org.d3if3154.mobpro1.R
 import org.d3if3154.mobpro1.model.User
 import org.d3if3154.mobpro1.ui.theme.MobproTheme
 
-// DAVIN WAHYU WARDANA
-// 6706223003
-// D3IF-4603
-
 @Composable
 fun ProfilDialog(
     user: User,
