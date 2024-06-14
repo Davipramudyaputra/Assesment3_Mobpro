@@ -1,4 +1,4 @@
-package org.d3if3154.mobpro1
+package org.davipramudya.ass3
 
 import org.junit.Test
 

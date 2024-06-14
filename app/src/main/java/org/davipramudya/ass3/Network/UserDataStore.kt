@@ -1,4 +1,4 @@
-package org.d3if3154.mobpro1.Network
+package org.davipramudya.ass3.Network
 
 import android.content.Context
 import androidx.datastore.core.DataStore
@@ -6,7 +6,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
-import org.d3if3154.mobpro1.model.User
+import org.davipramudya.ass3.model.User
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 

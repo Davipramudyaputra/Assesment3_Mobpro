@@ -1,4 +1,4 @@
-package org.d3if3154.mobpro1.ui.screen
+package org.davipramudya.ass3.ui.screen
 
 import android.content.ContentResolver
 import android.content.Context
@@ -10,6 +10,7 @@ import android.provider.MediaStore
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -72,22 +73,63 @@ import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.filled.Delete
-import org.d3if3154.mobpro1.BuildConfig
-import org.d3if3154.mobpro1.R
-import org.d3if3154.mobpro1.model.Hewan
-import org.d3if3154.mobpro1.model.User
-import org.d3if3154.mobpro1.Network.ApiStatus
-import org.d3if3154.mobpro1.Network.HewanApi
-import org.d3if3154.mobpro1.Network.UserDataStore
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.unit.Dp
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
+import coil.compose.rememberImagePainter
+import org.davipramudya.ass3.BuildConfig
+import org.davipramudya.ass3.R
+import org.davipramudya.ass3.model.Film
+import org.davipramudya.ass3.model.User
+import org.davipramudya.ass3.navigation.Screen
+import org.davipramudya.ass3.Network.ApiStatus
+import org.davipramudya.ass3.Network.FilmApi
+import org.davipramudya.ass3.Network.UserDataStore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import org.d3if3154.mobpro1.ui.theme.MobproTheme
+import org.davipramudya.ass3.ui.theme.MobproTheme
 
+@Composable
+fun ProfileImage(
+    imageUrl: String?,
+    modifier: Modifier = Modifier,
+    contentDescription: String?,
+    defaultImageRes: Int,
+    imageSize: Dp = 48.dp
+) {
+    val painter = rememberImagePainter(
+        data = imageUrl,
+        builder = {
+            crossfade(true)
+            placeholder(defaultImageRes)
+        }
+    )
+
+    Box(
+        modifier = modifier
+            .size(imageSize)
+            .clip(shape = CircleShape)
+    ) {
+        Image(
+            painter = painter,
+            contentDescription = contentDescription,
+            modifier = Modifier.fillMaxSize()
+        )
+    }
+}
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen() {
+fun MainScreen(navController: NavHostController) {
     val context = LocalContext.current
     val dataStore = UserDataStore(context)
     val user by dataStore.userFlow.collectAsState(User())
@@ -96,15 +138,17 @@ fun MainScreen() {
     val errorMessage by viewModel.errorMessage
 
     var showDialog by remember { mutableStateOf(false) }
-    var showHewanDialog by remember { mutableStateOf(false) }
+    var showFilmDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
-    var currentHewanId by remember { mutableStateOf("") }
+    var currentFilmId by remember { mutableStateOf("") }
 
     var bitmap: Bitmap? by remember { mutableStateOf(null) }
     val launcher = rememberLauncherForActivityResult(CropImageContract()) {
         bitmap = getCroppedImage(context.contentResolver, it)
-        if (bitmap != null) showHewanDialog = true
+        if (bitmap != null) showFilmDialog = true
     }
+
+    var showList by remember { mutableStateOf(true) }
 
     Scaffold(
         topBar = {
@@ -118,15 +162,46 @@ fun MainScreen() {
                 ),
                 actions = {
                     IconButton(onClick = {
+                        showList = !showList
+                    }) {
+                        Icon(
+                            painter = painterResource(
+                                if (showList) R.drawable.view_grid
+                                else R.drawable.view_list
+                            ),
+                            contentDescription = stringResource(
+                                if (showList) R.string.grid
+                                else R.string.list
+                            ),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    IconButton(onClick = {
                         if (user.email.isEmpty()) {
                             CoroutineScope(Dispatchers.IO).launch { signIn(context, dataStore) }
                         } else {
                             showDialog = true
                         }
                     }) {
+                        if (!user.photoUrl.isNullOrEmpty()) {
+                            ProfileImage(
+                                imageUrl = user.photoUrl,
+                                contentDescription = stringResource(R.string.profil),
+                                defaultImageRes = R.drawable.account_circle,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        } else {
+                            Icon(
+                                painter = painterResource(R.drawable.account_circle),
+                                contentDescription = stringResource(R.string.profil),
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+                    IconButton(onClick = { navController.navigate(Screen.About.route) }) {
                         Icon(
-                            painter = painterResource(R.drawable.account_circle),
-                            contentDescription = stringResource(R.string.profil),
+                            imageVector = Icons.Outlined.Info,
+                            contentDescription = stringResource(R.string.about),
                             tint = MaterialTheme.colorScheme.primary
                         )
                     }
@@ -134,33 +209,39 @@ fun MainScreen() {
             )
         },
         floatingActionButton = {
-            if (user.email.isNotEmpty()) {
-                FloatingActionButton(onClick = {
-                    val options = CropImageContractOptions(
-                        null, CropImageOptions(
-                            imageSourceIncludeGallery = false,
-                            imageSourceIncludeCamera = true,
-                            fixAspectRatio = true
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                if (user.email.isNotEmpty()) {
+                    FloatingActionButton(onClick = {
+                        val options = CropImageContractOptions(
+                            null, CropImageOptions(
+                                imageSourceIncludeGallery = false,
+                                imageSourceIncludeCamera = true,
+                                fixAspectRatio = true
+                            )
                         )
-                    )
-                    launcher.launch(options)
-                }) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = stringResource(id = R.string.tambah_hewan)
-                    )
+                        launcher.launch(options)
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = stringResource(id = R.string.tambah_film)
+                        )
+                    }
                 }
             }
         }
     ) { padding ->
         ScreenContent(
+            showList = showList,  // Ubah di sini
             viewModel = viewModel,
             userId = user.email,
             modifier = Modifier.padding(padding),
             onDeleteRequest = { id ->
                 showDeleteDialog = true
-                currentHewanId = id
-                Log.d("MainScreen", "Current Hewan ID: $currentHewanId")
+                currentFilmId = id
+                Log.d("MainScreen", "Current Film ID: $currentFilmId")
             },
             isUserLoggedIn = user.email.isNotEmpty()
         )
@@ -173,12 +254,12 @@ fun MainScreen() {
                 showDialog = false
             }
         }
-        if (showHewanDialog) {
-            HewanDialog(
+        if (showFilmDialog) {
+            FilmDialog(
                 bitmap = bitmap,
-                onDismissRequest = { showHewanDialog = false }) { nama, namaLatin ->
-                viewModel.saveData(user.email, nama, namaLatin, bitmap!!)
-                showHewanDialog = false
+                onDismissRequest = { showFilmDialog = false }) { judul, sutradara ->
+                viewModel.saveData(user.email, judul, sutradara, bitmap!!)
+                showFilmDialog = false
             }
         }
 
@@ -191,8 +272,8 @@ fun MainScreen() {
             DeleteConfirmationDialog(
                 onDismissRequest = { showDeleteDialog = false },
                 onConfirm = {
-                    Log.d("MainScreen", "Deleting Hewan ID: $currentHewanId")
-                    viewModel.deleteData(user.email, currentHewanId)
+                    Log.d("MainScreen", "Deleting Film ID: $currentFilmId")
+                    viewModel.deleteData(user.email, currentFilmId)
                     showDeleteDialog = false
                 }
             )
@@ -202,6 +283,7 @@ fun MainScreen() {
 
 @Composable
 fun ScreenContent(
+    showList: Boolean,
     viewModel: MainViewModel,
     userId: String,
     modifier: Modifier,
@@ -226,19 +308,38 @@ fun ScreenContent(
         }
 
         ApiStatus.SUCCESS -> {
-            LazyVerticalGrid(
-                modifier = modifier
-                    .fillMaxSize()
-                    .padding(4.dp),
-                columns = GridCells.Fixed(2),
-                contentPadding = PaddingValues(bottom = 80.dp)
-            ) {
-                items(data) { hewan ->
-                    ListItem(
-                        hewan = hewan,
-                        onDeleteRequest = onDeleteRequest,
-                        isUserLoggedIn = isUserLoggedIn
-                    )
+            if (showList) {
+                LazyVerticalGrid(
+                    modifier = modifier
+                        .fillMaxSize()
+                        .padding(4.dp),
+                    columns = GridCells.Fixed(2),
+                    contentPadding = PaddingValues(bottom = 80.dp)
+                ) {
+                    items(data.filter { it.auth.isEmpty() || it.auth == userId }) { film ->
+                        ListItem(
+                            film = film,
+                            onDeleteRequest = onDeleteRequest,
+                            isUserLoggedIn = isUserLoggedIn,
+                            currentUserId = userId
+                        )
+                    }
+                }
+            } else {
+                LazyColumn(
+                    modifier = modifier
+                        .fillMaxSize()
+                        .padding(4.dp),
+                    contentPadding = PaddingValues(bottom = 80.dp)
+                ) {
+                    items(data.filter { it.auth.isEmpty() || it.auth == userId }) { film ->
+                        ListItem(
+                            film = film,
+                            onDeleteRequest = onDeleteRequest,
+                            isUserLoggedIn = isUserLoggedIn,
+                            currentUserId = userId
+                        )
+                    }
                 }
             }
         }
@@ -262,68 +363,83 @@ fun ScreenContent(
     }
 }
 
+
+
 @Composable
-fun ListItem(hewan: Hewan, onDeleteRequest: (String) -> Unit, isUserLoggedIn: Boolean) {
-    Box(
-        modifier = Modifier
-            .padding(4.dp)
-            .border(1.dp, Color.Gray),
-        contentAlignment = Alignment.BottomCenter
-    ) {
-        AsyncImage(
-            model = ImageRequest.Builder(LocalContext.current)
-                .data(HewanApi.getHewanUrl(hewan.imageId))
-                .crossfade(true)
-                .build(),
-            contentDescription = stringResource(R.string.gambar, hewan.nama),
-            contentScale = ContentScale.Crop,
-            placeholder = painterResource(id = R.drawable.loading_img),
-            error = painterResource(id = R.drawable.broken_img),
+fun ListItem(
+    film: Film,
+    onDeleteRequest: (String) -> Unit,
+    isUserLoggedIn: Boolean,
+    currentUserId: String
+) {
+    if (film.auth.isEmpty() || film.auth == currentUserId) {
+        Box(
             modifier = Modifier
-                .fillMaxWidth()
                 .padding(4.dp)
-        )
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(4.dp)
-                .background(Color(red = 0f, green = 0f, blue = 0f, alpha = 0.5f))
-                .padding(4.dp)
+                .border(1.dp, Color.Gray),
+            contentAlignment = Alignment.BottomCenter
         ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = hewan.nama,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-                Text(
-                    text = hewan.namaLatin,
-                    fontStyle = FontStyle.Italic,
-                    fontSize = 14.sp,
-                    color = Color.White
+            Box(
+                modifier = Modifier
+                    .aspectRatio(1f)
+                    .border(1.dp, Color.Gray)
+            ) {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(FilmApi.getFilmUrl(film.image))
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = stringResource(R.string.gambar, film.judul),
+                    contentScale = ContentScale.Crop,
+                    placeholder = painterResource(id = R.drawable.loading_img),
+                    error = painterResource(id = R.drawable.broken_img),
+                    modifier = Modifier.fillMaxSize()
                 )
             }
-            if (isUserLoggedIn && hewan.mine == 1) {
-                IconButton(
-                    onClick = {
-                        if (hewan.id.isNotEmpty()) {
-                            onDeleteRequest(hewan.id)
-                        } else {
-                            Log.d("ListItem", "Invalid hewan ID")
-                        }
-                    },
-                    modifier = Modifier.align(Alignment.CenterVertically)
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Delete,
-                        contentDescription = stringResource(R.string.hapus),
-                        tint = Color.White
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(4.dp)
+                    .background(Color(red = 0f, green = 0f, blue = 0f, alpha = 0.5f))
+                    .padding(4.dp)
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = film.judul,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
                     )
+                    Text(
+                        text = film.sutradara,
+                        fontStyle = FontStyle.Italic,
+                        fontSize = 14.sp,
+                        color = Color.White
+                    )
+                }
+                if (isUserLoggedIn && film.auth == currentUserId) {
+                    IconButton(
+                        onClick = {
+                            if (film.id.isNotEmpty()) {
+                                onDeleteRequest(film.id)
+                            } else {
+                                Log.d("ListItem", "Invalid film ID")
+                            }
+                        },
+                        modifier = Modifier.align(Alignment.CenterVertically)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Delete,
+                            contentDescription = stringResource(R.string.hapus),
+                            tint = Color.White
+                        )
+                    }
                 }
             }
         }
     }
 }
+
 
 private suspend fun signIn(context: Context, dataStore: UserDataStore) {
     val googleIdOption: GetGoogleIdOption = GetGoogleIdOption.Builder()
@@ -398,7 +514,7 @@ private fun getCroppedImage(
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true)
 @Composable
 fun ScreenPreview() {
-MobproTheme {
-        MainScreen()
+    MobproTheme {
+        MainScreen(rememberNavController())
     }
 }

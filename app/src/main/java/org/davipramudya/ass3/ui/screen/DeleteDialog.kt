@@ -1,4 +1,4 @@
-package org.d3if3154.mobpro1.ui.screen
+package org.davipramudya.ass3.ui.screen
 
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.*
@@ -13,8 +13,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import org.d3if3154.mobpro1.R
-import org.d3if3154.mobpro1.ui.theme.MobproTheme
+import org.davipramudya.ass3.R
+import org.davipramudya.ass3.ui.theme.MobproTheme
 
 @Composable
 fun DeleteConfirmationDialog(onDismissRequest: () -> Unit, onConfirm: () -> Unit) {

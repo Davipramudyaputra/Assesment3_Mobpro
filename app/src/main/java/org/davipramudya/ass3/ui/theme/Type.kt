@@ -1,4 +1,4 @@
-package org.d3if3154.mobpro1.ui.theme
+package org.davipramudya.ass3.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle

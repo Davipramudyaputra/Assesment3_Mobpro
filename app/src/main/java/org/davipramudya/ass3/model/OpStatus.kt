@@ -1,4 +1,4 @@
-package org.d3if3154.mobpro1.model
+package org.davipramudya.ass3.model
 
 data class OpStatus(
     var status: String,

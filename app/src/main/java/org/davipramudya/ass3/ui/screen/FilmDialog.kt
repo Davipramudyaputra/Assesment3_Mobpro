@@ -1,4 +1,4 @@
-package org.d3if3154.mobpro1.ui.screen
+package org.davipramudya.ass3.ui.screen
 
 import android.content.res.Configuration
 import android.graphics.Bitmap
@@ -29,17 +29,17 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import org.d3if3154.mobpro1.R
-import org.d3if3154.mobpro1.ui.theme.MobproTheme
+import org.davipramudya.ass3.R
+import org.davipramudya.ass3.ui.theme.MobproTheme
 
 @Composable
-fun HewanDialog(
+fun FilmDialog(
     bitmap: Bitmap?,
     onDismissRequest: () -> Unit,
     onConfirmation: (String, String) -> Unit
 ) {
-    var nama by remember { mutableStateOf("") }
-    var namaLatin by remember { mutableStateOf("") }
+    var judul by remember { mutableStateOf("") }
+    var sutradara by remember { mutableStateOf("") }
 
     Dialog(onDismissRequest = { onDismissRequest() }) {
         Card(
@@ -56,9 +56,9 @@ fun HewanDialog(
                     modifier = Modifier.fillMaxWidth().aspectRatio(1f)
                 )
                 OutlinedTextField(
-                    value = nama,
-                    onValueChange = { nama = it },
-                    label = { Text(text = stringResource(id = R.string.nama)) },
+                    value = judul,
+                    onValueChange = { judul = it },
+                    label = { Text(text = stringResource(id = R.string.judul)) },
                     maxLines = 1,
                     keyboardOptions = KeyboardOptions(
                         capitalization = KeyboardCapitalization.Words,
@@ -67,9 +67,9 @@ fun HewanDialog(
                     modifier = Modifier.padding(top = 8.dp)
                 )
                 OutlinedTextField(
-                    value = namaLatin,
-                    onValueChange = { namaLatin = it },
-                    label = { Text(text = stringResource(id = R.string.nama_latin)) },
+                    value = sutradara,
+                    onValueChange = { sutradara = it },
+                    label = { Text(text = stringResource(id = R.string.sutradara)) },
                     maxLines = 1,
                     keyboardOptions = KeyboardOptions(
                         capitalization = KeyboardCapitalization.Sentences,
@@ -88,8 +88,8 @@ fun HewanDialog(
                         Text(text = stringResource(R.string.batal))
                     }
                     OutlinedButton(
-                        onClick = { onConfirmation(nama, namaLatin) },
-                        enabled = nama.isNotEmpty() && namaLatin.isNotEmpty(),
+                        onClick = { onConfirmation(judul, sutradara) },
+                        enabled = judul.isNotEmpty() && sutradara.isNotEmpty(),
                         modifier = Modifier.padding(8.dp)
                     ) {
                         Text(text = stringResource(R.string.simpan))
@@ -105,7 +105,7 @@ fun HewanDialog(
 @Composable
 fun AddDialogPreview() {
     MobproTheme {
-        HewanDialog(
+        FilmDialog(
             bitmap = null,
             onDismissRequest = {},
             onConfirmation = { _, _ -> }

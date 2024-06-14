@@ -1,13 +1,13 @@
-package org.d3if3154.mobpro1.ui.screen
+package org.davipramudya.ass3.ui.screen
 
 import android.graphics.Bitmap
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import org.d3if3154.mobpro1.model.Hewan
-import org.d3if3154.mobpro1.Network.ApiStatus
-import org.d3if3154.mobpro1.Network.HewanApi
+import org.davipramudya.ass3.model.Film
+import org.davipramudya.ass3.Network.ApiStatus
+import org.davipramudya.ass3.Network.FilmApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -18,7 +18,7 @@ import java.io.ByteArrayOutputStream
 
 class MainViewModel : ViewModel() {
 
-    var data = mutableStateOf(emptyList<Hewan>())
+    var data = mutableStateOf(emptyList<Film>())
         private set
 
     var status = MutableStateFlow(ApiStatus.LOADING)
@@ -31,7 +31,7 @@ class MainViewModel : ViewModel() {
         viewModelScope.launch(Dispatchers.IO) {
             status.value = ApiStatus.LOADING
             try {
-                data.value = HewanApi.service.getHewan(userId)
+                data.value = FilmApi.service.getFilm(userId)
                 status.value = ApiStatus.SUCCESS
             } catch (e: Exception) {
                 Log.d("MainViewModel", "Failure: ${e.message}")
@@ -40,13 +40,13 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    fun saveData(userId: String, nama: String, namaLatin: String, bitmap: Bitmap) {
+    fun saveData(userId: String, judul: String, deskripsi: String, bitmap: Bitmap) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val result = HewanApi.service.postHewan(
+                val result = FilmApi.service.postFilm(
                     userId,
-                    nama.toRequestBody("text/plain".toMediaTypeOrNull()),
-                    namaLatin.toRequestBody("text/plain".toMediaTypeOrNull()),
+                    judul.toRequestBody("text/plain".toMediaTypeOrNull()),
+                    deskripsi.toRequestBody("text/plain".toMediaTypeOrNull()),
                     bitmap.toMultipartBody()
                 )
 
@@ -61,11 +61,11 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    fun deleteData(userId: String, hewanId: String) {
+    fun deleteData(userId: String, FilmId: String) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                Log.d("MainViewModel", "Attempting to delete hewan with ID: $hewanId using user ID: $userId")
-                val result = HewanApi.service.deleteHewan(userId, hewanId)
+                Log.d("MainViewModel", "Attempting to delete film with ID: $FilmId using user ID: $userId")
+                val result = FilmApi.service.deleteFilm(userId, FilmId)
                 Log.d("MainViewModel", "API Response: status=${result.status}, message=${result.message}")
                 if (result.status == "success") {
                     retrieveData(userId)

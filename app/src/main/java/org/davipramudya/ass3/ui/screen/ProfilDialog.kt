@@ -1,4 +1,4 @@
-package org.d3if3154.mobpro1.ui.screen
+package org.davipramudya.ass3.ui.screen
 
 import android.content.res.Configuration
 import androidx.compose.foundation.BorderStroke
@@ -29,9 +29,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import org.d3if3154.mobpro1.R
-import org.d3if3154.mobpro1.model.User
-import org.d3if3154.mobpro1.ui.theme.MobproTheme
+import org.davipramudya.ass3.R
+import org.davipramudya.ass3.model.User
+import org.davipramudya.ass3.ui.theme.MobproTheme
 
 @Composable
 fun ProfilDialog(

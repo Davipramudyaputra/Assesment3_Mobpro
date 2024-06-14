@@ -1,4 +1,4 @@
-package org.d3if3154.mobpro1
+package org.davipramudya.ass3
 
 import android.content.res.Configuration
 import android.os.Bundle
@@ -16,24 +16,25 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import org.davipramudya.ass3.ui.screen.MainScreen
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import org.d3if3154.mobpro1.ui.screen.MainScreen
-import org.d3if3154.mobpro1.ui.theme.MobproTheme
+import org.davipramudya.ass3.navigation.SetupNavGraph
+import org.davipramudya.ass3.ui.theme.MobproTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             MobproTheme {
-                // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                   MainScreen()
+                    SetupNavGraph()
                 }
             }
         }
     }
 }
+
